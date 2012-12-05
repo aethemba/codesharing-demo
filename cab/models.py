@@ -6,11 +6,15 @@ from django.contrib.auth.models import User
 from markdown import markdown
 import datetime
 
+from cab import managers
+
 class Language(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     language_code = models.CharField(max_length=50)
     mime_type = models.CharField(max_length=100)
+
+    objects = managers.LanguageManager()
 
     class Meta:
         ordering = ['name']
@@ -37,6 +41,8 @@ class Snippet(models.Model):
     pub_date = models.DateTimeField(editable=False)
     update_date = models.DateTimeField(editable=False)
 
+    objects = managers.SnippetManager()
+
     class Meta:
         ordering = ['-pub_date']
 
@@ -51,10 +57,10 @@ class Snippet(models.Model):
     def save(self, force_insert=False, force_update=False):
         if not self.id:
             self.pub_date = datetime.datetime.now()
-        self.updated_date = datetime.datetime.now()
+        self.update_date = datetime.datetime.now()
 
         self.description_html = markdown(self.description)
-        self.highlighted_code = self.higlight()
+        self.highlighted_code = self.highlight()
         super(Snippet, self).save(force_insert, force_update)
 
     def get_absolute_url(self):
